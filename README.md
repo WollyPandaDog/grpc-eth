@@ -1,6 +1,6 @@
 # grpc-eth
 
-## Setup
+## Prerequisites
 1. Install gRPC
 ```
 $ go get google.golang.org/grpc
@@ -16,4 +16,14 @@ $ export PATH="$PATH:~/.local/bin"
 $ export GO111MODULE=on  # Enable module mode
 $ go get google.golang.org/protobuf/cmd/protoc-gen-go \
          google.golang.org/grpc/cmd/protoc-gen-go-grpc
+```
+
+## Code generation
+1. In the project root run the following
+```
+protoc --go_out=. \
+       --go_opt=paths=source_relative \
+       --go-grpc_out=. \
+       --go-grpc_opt=paths=source_relative \
+       fruit/fruit.proto 
 ```
