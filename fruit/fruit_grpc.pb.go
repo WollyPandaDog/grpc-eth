@@ -14,156 +14,88 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// FruitClient is the client API for Fruit service.
+// ChatServiceClient is the client API for ChatService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type FruitClient interface {
-	// Get all Fruits with filter - A server-to-client streaming RPC.
-	GetFruits(ctx context.Context, in *FruitFilter, opts ...grpc.CallOption) (Fruit_GetFruitsClient, error)
-	// Create a new Fruit - A simple RPC
-	CreateFruit(ctx context.Context, in *FruitRequest, opts ...grpc.CallOption) (*FruitResponse, error)
+type ChatServiceClient interface {
+	SayHello(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 }
 
-type fruitClient struct {
+type chatServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewFruitClient(cc grpc.ClientConnInterface) FruitClient {
-	return &fruitClient{cc}
+func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
+	return &chatServiceClient{cc}
 }
 
-func (c *fruitClient) GetFruits(ctx context.Context, in *FruitFilter, opts ...grpc.CallOption) (Fruit_GetFruitsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Fruit_ServiceDesc.Streams[0], "/fruit.Fruit/GetFruits", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &fruitGetFruitsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Fruit_GetFruitsClient interface {
-	Recv() (*FruitRequest, error)
-	grpc.ClientStream
-}
-
-type fruitGetFruitsClient struct {
-	grpc.ClientStream
-}
-
-func (x *fruitGetFruitsClient) Recv() (*FruitRequest, error) {
-	m := new(FruitRequest)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *fruitClient) CreateFruit(ctx context.Context, in *FruitRequest, opts ...grpc.CallOption) (*FruitResponse, error) {
-	out := new(FruitResponse)
-	err := c.cc.Invoke(ctx, "/fruit.Fruit/CreateFruit", in, out, opts...)
+func (c *chatServiceClient) SayHello(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/chat.ChatService/SayHello", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// FruitServer is the server API for Fruit service.
-// All implementations must embed UnimplementedFruitServer
+// ChatServiceServer is the server API for ChatService service.
+// All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
-type FruitServer interface {
-	// Get all Fruits with filter - A server-to-client streaming RPC.
-	GetFruits(*FruitFilter, Fruit_GetFruitsServer) error
-	// Create a new Fruit - A simple RPC
-	CreateFruit(context.Context, *FruitRequest) (*FruitResponse, error)
-	mustEmbedUnimplementedFruitServer()
+type ChatServiceServer interface {
+	SayHello(context.Context, *Message) (*Message, error)
+	mustEmbedUnimplementedChatServiceServer()
 }
 
-// UnimplementedFruitServer must be embedded to have forward compatible implementations.
-type UnimplementedFruitServer struct {
+// UnimplementedChatServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedChatServiceServer struct {
 }
 
-func (UnimplementedFruitServer) GetFruits(*FruitFilter, Fruit_GetFruitsServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetFruits not implemented")
+func (UnimplementedChatServiceServer) SayHello(context.Context, *Message) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
 }
-func (UnimplementedFruitServer) CreateFruit(context.Context, *FruitRequest) (*FruitResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateFruit not implemented")
-}
-func (UnimplementedFruitServer) mustEmbedUnimplementedFruitServer() {}
+func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
-// UnsafeFruitServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to FruitServer will
+// UnsafeChatServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ChatServiceServer will
 // result in compilation errors.
-type UnsafeFruitServer interface {
-	mustEmbedUnimplementedFruitServer()
+type UnsafeChatServiceServer interface {
+	mustEmbedUnimplementedChatServiceServer()
 }
 
-func RegisterFruitServer(s grpc.ServiceRegistrar, srv FruitServer) {
-	s.RegisterService(&Fruit_ServiceDesc, srv)
+func RegisterChatServiceServer(s grpc.ServiceRegistrar, srv ChatServiceServer) {
+	s.RegisterService(&ChatService_ServiceDesc, srv)
 }
 
-func _Fruit_GetFruits_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(FruitFilter)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(FruitServer).GetFruits(m, &fruitGetFruitsServer{stream})
-}
-
-type Fruit_GetFruitsServer interface {
-	Send(*FruitRequest) error
-	grpc.ServerStream
-}
-
-type fruitGetFruitsServer struct {
-	grpc.ServerStream
-}
-
-func (x *fruitGetFruitsServer) Send(m *FruitRequest) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _Fruit_CreateFruit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FruitRequest)
+func _ChatService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FruitServer).CreateFruit(ctx, in)
+		return srv.(ChatServiceServer).SayHello(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/fruit.Fruit/CreateFruit",
+		FullMethod: "/chat.ChatService/SayHello",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FruitServer).CreateFruit(ctx, req.(*FruitRequest))
+		return srv.(ChatServiceServer).SayHello(ctx, req.(*Message))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Fruit_ServiceDesc is the grpc.ServiceDesc for Fruit service.
+// ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Fruit_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "fruit.Fruit",
-	HandlerType: (*FruitServer)(nil),
+var ChatService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "chat.ChatService",
+	HandlerType: (*ChatServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateFruit",
-			Handler:    _Fruit_CreateFruit_Handler,
+			MethodName: "SayHello",
+			Handler:    _ChatService_SayHello_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "GetFruits",
-			Handler:       _Fruit_GetFruits_Handler,
-			ServerStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "fruit/fruit.proto",
 }

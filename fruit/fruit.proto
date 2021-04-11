@@ -1,39 +1,11 @@
 syntax = "proto3";
-
 option go_package = "github.com/grpc-eth/fruit";
+package chat;
 
-package fruit;
-
-// The Fruit service definition.
-service Fruit {
- // Get all Fruits with filter - A server-to-client streaming RPC.
- rpc GetFruits(FruitFilter) returns (stream FruitRequest) {}
- // Create a new Fruit - A simple RPC
- rpc CreateFruit (FruitRequest) returns (FruitResponse) {}
+message Message {
+  string body = 1;
 }
 
-// Request message for creating a new Fruit
-message FruitRequest {
- int32 id = 1;  // Unique ID number for a Fruit.
- string name = 2;
- string colour = 3;
-
- message Nutrition {
-   string calories = 1;
-   string carbohydrates = 2;
-   string sugar = 3;
-   string protein = 4;
-   string fat = 5;
-   string fibre = 6;
- }
-  // repeated Address addresses = 5;
-}
-
-message FruitResponse {
- int32 id = 1;
- bool success = 2;
-}
-
-message FruitFilter {
- string keyword = 1;
+service ChatService {
+  rpc SayHello(Message) returns (Message) {}
 }
